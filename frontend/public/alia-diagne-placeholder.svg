@@ -1,0 +1,14 @@
+<svg width="1200" height="1400" viewBox="0 0 1200 1400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="1400" fill="#F8EFE9"/>
+  <path d="M0 1036C176 943 325 926 495 1007C697 1104 867 1098 1200 938V1400H0V1036Z" fill="#D45B75"/>
+  <path d="M1200 0V475C1040 396 872 384 697 445C513 510 348 499 164 402C98 367 43 350 0 342V0H1200Z" fill="#134E4A"/>
+  <ellipse cx="602" cy="599" rx="294" ry="362" fill="#C98E68"/>
+  <path d="M327 530C351 293 464 168 615 168C774 168 874 301 895 522C853 466 821 434 777 404C712 360 615 345 542 373C450 408 391 457 327 530Z" fill="#8C523D"/>
+  <path d="M333 623C333 473 452 352 599 352C746 352 865 473 865 623V728C865 874 746 992 599 992C452 992 333 874 333 728V623Z" fill="#9B6048"/>
+  <circle cx="501" cy="628" r="22" fill="#2E2726"/>
+  <circle cx="699" cy="628" r="22" fill="#2E2726"/>
+  <path d="M532 778C581 816 641 815 688 778" stroke="#FBE8DF" stroke-width="24" stroke-linecap="round"/>
+  <path d="M242 1252C266 1042 414 942 599 942C784 942 934 1042 958 1252H242Z" fill="#151923"/>
+  <rect x="443" y="1042" width="316" height="64" rx="32" fill="#151923"/>
+  <text x="600" y="1315" text-anchor="middle" font-family="Arial, sans-serif" font-size="54" font-weight="700" fill="#FFFFFF">Alia DIAGNE</text>
+</svg>
