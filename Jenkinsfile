@@ -81,7 +81,7 @@ pipeline {
         stage('Docker Build') {
             steps {
                 echo '🐳 Construction des images Docker...'
-                sh 'docker compose build'
+                sh 'docker-compose build'
                 echo '✅ Images Docker construites !'
             }
         }
@@ -94,7 +94,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo '🚀 Déploiement en cours...'
-                sh 'docker compose up -d --force-recreate'
+                sh 'docker-compose up -d --force-recreate'
                 echo '✅ Déploiement terminé !'
             }
         }
