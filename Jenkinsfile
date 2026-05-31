@@ -1,23 +1,14 @@
 pipeline {
-
-    // Définit où Jenkins exécute ce pipeline
-    // "any" = sur n'importe quel agent disponible
     agent any
 
-    // Variables disponibles dans tout le pipeline
     environment {
-        // Nom du projet dans SonarQube
         SONAR_PROJECT_KEY = 'portfolio-alia'
-        // URL de SonarQube (nom du service Docker)
         SONAR_HOST_URL    = 'http://sonarqube:9000'
+        COMPOSE_FILE      = 'docker-compose.yml'
     }
 
     stages {
 
-        // ─────────────────────────────────────
-        // STAGE 1 : Récupération du code
-        // Jenkins clone ton dépôt GitHub
-        // ─────────────────────────────────────
         stage('Checkout') {
             steps {
                 echo '📥 Récupération du code source...'
@@ -25,9 +16,6 @@ pipeline {
             }
         }
 
-        // ─────────────────────────────────────
-        // STAGE 2 : Installation des dépendances
-        // ─────────────────────────────────────
         stage('Install Dependencies') {
             steps {
                 echo '📦 Installation des dépendances backend...'
@@ -41,10 +29,6 @@ pipeline {
             }
         }
 
-        // ─────────────────────────────────────
-        // STAGE 3 : Build du frontend
-        // Compile React en fichiers statiques
-        // ─────────────────────────────────────
         stage('Build Frontend') {
             steps {
                 echo '🏗️  Compilation du frontend React...'
@@ -55,10 +39,6 @@ pipeline {
             }
         }
 
-        // ─────────────────────────────────────
-        // STAGE 4 : Analyse SonarQube
-        // Analyse la qualité du code
-        // ─────────────────────────────────────
         stage('SonarQube Analysis') {
             steps {
                 echo '🔍 Analyse de la qualité du code...'
@@ -75,35 +55,24 @@ pipeline {
             }
         }
 
-        // ─────────────────────────────────────
-        // STAGE 5 : Build des images Docker
-        // ─────────────────────────────────────
         stage('Docker Build') {
             steps {
                 echo '🐳 Construction des images Docker...'
-                sh 'docker-compose build'
+                // On précise explicitement le fichier compose
+                sh 'docker-compose -f ${WORKSPACE}/docker-compose.yml build'
                 echo '✅ Images Docker construites !'
             }
         }
 
-        // ─────────────────────────────────────
-        // STAGE 6 : Déploiement
-        // Redémarre les conteneurs avec
-        // les nouvelles images
-        // ─────────────────────────────────────
         stage('Deploy') {
             steps {
                 echo '🚀 Déploiement en cours...'
-                sh 'docker-compose up -d --force-recreate'
+                sh 'docker-compose -f ${WORKSPACE}/docker-compose.yml up -d --force-recreate'
                 echo '✅ Déploiement terminé !'
             }
         }
     }
 
-    // ─────────────────────────────────────
-    // POST : Actions après le pipeline
-    // Exécutées peu importe le résultat
-    // ─────────────────────────────────────
     post {
         success {
             echo '🎉 Pipeline réussi ! Le portfolio est déployé.'
