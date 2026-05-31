@@ -52,7 +52,7 @@ pipeline {
             steps {
                 echo '🐳 Construction des images Docker...'
                 sh """
-                    docker-compose \
+                    docker-compose --env-file /var/jenkins_home/.env \
                         -p ${COMPOSE_PROJECT} \
                         -f ${COMPOSE_FILE_PATH} \
                         build backend frontend
@@ -65,7 +65,7 @@ pipeline {
             steps {
                 echo '🚀 Déploiement en cours...'
                 sh """
-                    docker-compose \
+                    docker-compose --env-file /var/jenkins_home/.env \
                         -p ${COMPOSE_PROJECT} \
                         -f ${COMPOSE_FILE_PATH} \
                         up -d --force-recreate \
