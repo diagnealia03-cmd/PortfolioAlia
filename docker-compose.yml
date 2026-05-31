@@ -1,16 +1,13 @@
 services:
 
-  # ════════════════════════════════
-  # SERVICE 1 : MongoDB
-  # ════════════════════════════════
   mongodb:
     image: mongo:7.0
     container_name: portfolio_mongodb
     restart: unless-stopped
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: secret123
-      MONGO_INITDB_DATABASE: portfolio_alia
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
     ports:
       - "27017:27017"
     volumes:
@@ -23,9 +20,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # ════════════════════════════════
-  # SERVICE 2 : Backend Express
-  # ════════════════════════════════
   backend:
     build:
       context: ./backend
@@ -35,7 +29,7 @@ services:
     environment:
       PORT: 5000
       NODE_ENV: production
-      MONGODB_URI: mongodb://admin:secret123@mongodb:27017/portfolio_alia?authSource=admin
+      MONGODB_URI: mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongodb:27017/${MONGO_DATABASE}?authSource=admin
       CLIENT_URL: http://localhost
     ports:
       - "5000:5000"
@@ -45,9 +39,6 @@ services:
     networks:
       - portfolio_network
 
-  # ════════════════════════════════
-  # SERVICE 3 : Frontend React/Nginx
-  # ════════════════════════════════
   frontend:
     build:
       context: ./frontend
@@ -61,37 +52,25 @@ services:
     networks:
       - portfolio_network
 
-  # ════════════════════════════════
-  # SERVICE 4 : Jenkins CI/CD
-  # ════════════════════════════════
   jenkins:
-    # Image Jenkins avec les outils Blue Ocean (interface moderne)
     image: jenkins/jenkins:lts
     container_name: portfolio_jenkins
     restart: unless-stopped
-    # L'utilisateur root est nécessaire pour accéder au socket Docker
     user: root
     ports:
-      - "8080:8080"    # Interface web Jenkins
-      - "50000:50000"  # Port pour les agents Jenkins (workers)
+      - "8080:8080"
+      - "50000:50000"
     volumes:
-      # Données Jenkins persistantes (jobs, config, plugins)
       - jenkins_data:/var/jenkins_home
-      # Partage du socket Docker de la machine hôte
-      # C'est ce qui permet à Jenkins de lancer des builds Docker
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - portfolio_network
 
-  # ════════════════════════════════
-  # SERVICE 5 : SonarQube
-  # ════════════════════════════════
   sonarqube:
     image: sonarqube:community
     container_name: portfolio_sonarqube
     restart: unless-stopped
     environment:
-      # Base de données interne H2 (suffisant pour notre usage)
       SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
     ports:
       - "9000:9000"
@@ -104,15 +83,10 @@ services:
 
 volumes:
   mongodb_data:
-    driver: local
   jenkins_data:
-    driver: local
   sonarqube_data:
-    driver: local
   sonarqube_logs:
-    driver: local
   sonarqube_extensions:
-    driver: local
 
 networks:
   portfolio_network:
