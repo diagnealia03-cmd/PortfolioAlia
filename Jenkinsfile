@@ -4,7 +4,7 @@ pipeline {
     environment {
         SONAR_PROJECT_KEY = 'portfolio-alia'
         SONAR_HOST_URL    = 'http://sonarqube:9000'
-        COMPOSE_FILE      = 'docker-compose.yml'
+        COMPOSE_FILE_PATH = '/var/jenkins_home/workspace/portfolio-alia-pipeline/docker-compose.yml'
     }
 
     stages {
@@ -19,22 +19,16 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 echo '📦 Installation des dépendances backend...'
-                dir('backend') {
-                    sh 'npm install'
-                }
+                dir('backend') { sh 'npm install' }
                 echo '📦 Installation des dépendances frontend...'
-                dir('frontend') {
-                    sh 'npm install'
-                }
+                dir('frontend') { sh 'npm install' }
             }
         }
 
         stage('Build Frontend') {
             steps {
                 echo '🏗️  Compilation du frontend React...'
-                dir('frontend') {
-                    sh 'npm run build'
-                }
+                dir('frontend') { sh 'npm run build' }
                 echo '✅ Build frontend terminé !'
             }
         }
@@ -58,8 +52,7 @@ pipeline {
         stage('Docker Build') {
             steps {
                 echo '🐳 Construction des images Docker...'
-                // On précise explicitement le fichier compose
-                sh 'docker-compose -f ${WORKSPACE}/docker-compose.yml build'
+                sh "docker-compose -f ${WORKSPACE}/docker-compose.yml build backend frontend"
                 echo '✅ Images Docker construites !'
             }
         }
@@ -67,7 +60,13 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo '🚀 Déploiement en cours...'
-                sh 'docker-compose -f ${WORKSPACE}/docker-compose.yml up -d --force-recreate'
+                // On redémarre UNIQUEMENT les services applicatifs
+                // pas Jenkins ni SonarQube qui tournent déjà
+                sh """
+                    docker-compose -f ${WORKSPACE}/docker-compose.yml \
+                        up -d --force-recreate \
+                        mongodb backend frontend
+                """
                 echo '✅ Déploiement terminé !'
             }
         }
@@ -75,7 +74,7 @@ pipeline {
 
     post {
         success {
-            echo '🎉 Pipeline réussi ! Le portfolio est déployé.'
+            echo '🎉 Pipeline réussi ! Le portfolio est déployé sur http://localhost'
         }
         failure {
             echo '❌ Pipeline échoué. Vérifie les logs ci-dessus.'
