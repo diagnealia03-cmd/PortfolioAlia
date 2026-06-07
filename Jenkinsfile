@@ -1,8 +1,5 @@
 pipeline {
     agent any
-    tools {
-        nodejs 'NodeJS-20'
-    }
     environment {
         SONAR_PROJECT_KEY  = 'portfolio-alia'
         SONAR_HOST_URL     = 'http://sonarqube:9000'
