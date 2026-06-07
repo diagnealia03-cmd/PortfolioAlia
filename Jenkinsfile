@@ -72,8 +72,6 @@ pipeline {
             steps {
                 echo '☸️ Déploiement sur Kubernetes...'
                 sh """
-                    minikube image load portfolioalia-backend:latest
-                    minikube image load portfolioalia-frontend:latest
                     kubectl apply -f ${WORKSPACE}/k8s/namespace.yaml
                     kubectl apply -f ${WORKSPACE}/k8s/secrets.yaml
                     kubectl apply -f ${WORKSPACE}/k8s/mongodb/
@@ -81,8 +79,8 @@ pipeline {
                     kubectl apply -f ${WORKSPACE}/k8s/frontend/
                     kubectl rollout restart deployment/backend -n portfolio
                     kubectl rollout restart deployment/frontend -n portfolio
-                    kubectl rollout status deployment/backend -n portfolio
-                    kubectl rollout status deployment/frontend -n portfolio
+                    kubectl rollout status deployment/backend -n portfolio --timeout=60s
+                    kubectl rollout status deployment/frontend -n portfolio --timeout=60s
                 """
                 echo '✅ Déploiement Kubernetes terminé !'
             }
