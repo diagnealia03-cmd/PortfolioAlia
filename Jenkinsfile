@@ -55,9 +55,9 @@ pipeline {
                 echo '✅ Images Docker construites !'
             }
         }
-        stage('Deploy') {
+        stage('Deploy Docker') {
             steps {
-                echo '🚀 Déploiement en cours...'
+                echo '🚀 Déploiement Docker en cours...'
                 sh """
                     docker-compose --env-file /var/jenkins_home/.env \
                         -p ${COMPOSE_PROJECT} \
@@ -65,13 +65,32 @@ pipeline {
                         up -d --force-recreate \
                         mongodb backend frontend
                 """
-                echo '✅ Déploiement terminé !'
+                echo '✅ Déploiement Docker terminé !'
+            }
+        }
+        stage('Deploy to Kubernetes') {
+            steps {
+                echo '☸️ Déploiement sur Kubernetes...'
+                sh """
+                    minikube image load portfolioalia-backend:latest
+                    minikube image load portfolioalia-frontend:latest
+                    kubectl apply -f ${WORKSPACE}/k8s/namespace.yaml
+                    kubectl apply -f ${WORKSPACE}/k8s/secrets.yaml
+                    kubectl apply -f ${WORKSPACE}/k8s/mongodb/
+                    kubectl apply -f ${WORKSPACE}/k8s/backend/
+                    kubectl apply -f ${WORKSPACE}/k8s/frontend/
+                    kubectl rollout restart deployment/backend -n portfolio
+                    kubectl rollout restart deployment/frontend -n portfolio
+                    kubectl rollout status deployment/backend -n portfolio
+                    kubectl rollout status deployment/frontend -n portfolio
+                """
+                echo '✅ Déploiement Kubernetes terminé !'
             }
         }
     }
     post {
         success {
-            echo '🎉 Pipeline réussi ! Portfolio déployé sur http://localhost'
+            echo '🎉 Pipeline réussi ! Portfolio déployé sur Docker et Kubernetes !'
         }
         failure {
             echo '❌ Pipeline échoué. Vérifie les logs ci-dessus.'
