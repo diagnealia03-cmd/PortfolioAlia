@@ -30,15 +30,15 @@ pipeline {
                 echo '🔍 Analyse de la qualité du code...'
                 withSonarQubeEnv('SonarQube') {
                     withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
-                        sh """
+                        sh '''
                             npx sonar-scanner \
-                              -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                              -Dsonar.projectName='Portfolio Alia DIAGNE' \
+                              -Dsonar.projectKey=portfolio-alia \
+                              -Dsonar.projectName="Portfolio Alia DIAGNE" \
                               -Dsonar.sources=. \
                               -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/.git/** \
-                              -Dsonar.host.url=${SONAR_HOST_URL} \
-                              -Dsonar.token=${SONAR_TOKEN}
-                        """
+                              -Dsonar.host.url=http://sonarqube:9000 \
+                              -Dsonar.token=$SONAR_TOKEN
+                        '''
                     }
                 }
             }
