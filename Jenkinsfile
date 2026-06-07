@@ -1,37 +1,33 @@
 pipeline {
     agent any
-
+    tools {
+        nodejs 'NodeJS-20'
+    }
     environment {
         SONAR_PROJECT_KEY  = 'portfolio-alia'
         SONAR_HOST_URL     = 'http://sonarqube:9000'
-        // Nom du projet Compose = même que celui lancé depuis ton PC
         COMPOSE_PROJECT    = 'portfolioalia'
         COMPOSE_FILE_PATH  = "${WORKSPACE}/docker-compose.yml"
     }
-
     stages {
-
         stage('Checkout') {
             steps {
                 echo '📥 Récupération du code source...'
                 checkout scm
             }
         }
-
         stage('Install Dependencies') {
             steps {
                 dir('backend') { sh 'npm install' }
                 dir('frontend') { sh 'npm install' }
             }
         }
-
         stage('Build Frontend') {
             steps {
                 dir('frontend') { sh 'npm run build' }
                 echo '✅ Build frontend terminé !'
             }
         }
-
         stage('SonarQube Analysis') {
             steps {
                 echo '🔍 Analyse de la qualité du code...'
@@ -47,7 +43,6 @@ pipeline {
                 }
             }
         }
-
         stage('Docker Build') {
             steps {
                 echo '🐳 Construction des images Docker...'
@@ -60,7 +55,6 @@ pipeline {
                 echo '✅ Images Docker construites !'
             }
         }
-
         stage('Deploy') {
             steps {
                 echo '🚀 Déploiement en cours...'
@@ -75,7 +69,6 @@ pipeline {
             }
         }
     }
-
     post {
         success {
             echo '🎉 Pipeline réussi ! Portfolio déployé sur http://localhost'
