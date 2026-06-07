@@ -29,17 +29,13 @@ pipeline {
             steps {
                 echo '🔍 Analyse de la qualité du code...'
                 withSonarQubeEnv('SonarQube') {
-                    withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
-                        sh '''
-                            npx sonar-scanner \
-                              -Dsonar.projectKey=portfolio-alia \
-                              -Dsonar.projectName="Portfolio Alia DIAGNE" \
-                              -Dsonar.sources=. \
-                              -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/.git/** \
-                              -Dsonar.host.url=http://sonarqube:9000 \
-                              -Dsonar.token=$SONAR_TOKEN
-                        '''
-                    }
+                    sh '''
+                        npx sonar-scanner \
+                          -Dsonar.projectKey=portfolio-alia \
+                          -Dsonar.projectName="Portfolio Alia DIAGNE" \
+                          -Dsonar.sources=. \
+                          -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/.git/**
+                    '''
                 }
             }
         }
