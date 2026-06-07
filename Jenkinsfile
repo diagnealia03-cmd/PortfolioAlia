@@ -30,7 +30,7 @@ pipeline {
                 echo '🔍 Analyse de la qualité du code...'
                 withSonarQubeEnv('SonarQube') {
                     sh '''
-                        npx sonar-scanner \
+                        sonar-scanner \
                           -Dsonar.projectKey=portfolio-alia \
                           -Dsonar.projectName="Portfolio Alia DIAGNE" \
                           -Dsonar.sources=. \
