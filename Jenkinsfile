@@ -90,8 +90,8 @@ pipeline {
                     kubectl apply -f ${WORKSPACE}/k8s/frontend/
                     kubectl rollout restart deployment/backend -n portfolio
                     kubectl rollout restart deployment/frontend -n portfolio
-                    kubectl rollout status deployment/backend -n portfolio --timeout=60s
-                    kubectl rollout status deployment/frontend -n portfolio --timeout=60s
+                    kubectl rollout status deployment/backend -n portfolio --timeout=120s
+                    kubectl rollout status deployment/frontend -n portfolio --timeout=120s
                 """
                 echo '✅ Déploiement Kubernetes terminé !'
             }
