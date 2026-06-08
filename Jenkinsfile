@@ -13,6 +13,21 @@ pipeline {
                 checkout scm
             }
         }
+        stage('Install Node.js') {
+            steps {
+                echo '⚙️ Installation de Node.js...'
+                sh '''
+                    if ! command -v node &> /dev/null; then
+                        curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+                        apt-get install -y nodejs
+                    else
+                        echo "Node.js déjà installé : $(node -v)"
+                    fi
+                    node -v
+                    npm -v
+                '''
+            }
+        }
         stage('Install Dependencies') {
             steps {
                 dir('backend') { sh 'npm install' }
