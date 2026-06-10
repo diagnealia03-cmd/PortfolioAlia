@@ -1,0 +1,15 @@
+# Etat Terraform - contient des données sensibles
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate
+terraform.tfstate.backup
+*.tfstate
+*.tfstate.*
+
+# Fichiers sensibles
+*.tfvars
+!terraform.tfvars.example
+
+# Crash logs
+crash.log
+crash.*.log

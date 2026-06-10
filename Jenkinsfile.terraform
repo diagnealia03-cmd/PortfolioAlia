@@ -1,0 +1,125 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE_FRONTEND = "portfolioalia-frontend"
+        DOCKER_IMAGE_BACKEND  = "portfolioalia-backend"
+        IMAGE_TAG             = "${BUILD_NUMBER}"
+        NAMESPACE             = "portfolio"
+        SONAR_PROJECT_KEY     = "portfolioalia"
+        TF_WORKING_DIR        = "terraform"
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+                echo "✅ Code récupéré depuis GitHub"
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh '''
+                        sonar-scanner \
+                          -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                          -Dsonar.sources=. \
+                          -Dsonar.exclusions=**/node_modules/**,**/terraform/**
+                    '''
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                waitForQualityGate abortPipeline: true
+            }
+        }
+
+        stage('Build Docker Images') {
+            steps {
+                sh '''
+                    docker build -t ${DOCKER_IMAGE_FRONTEND}:${IMAGE_TAG} \
+                                 -t ${DOCKER_IMAGE_FRONTEND}:latest ./frontend
+                    docker build -t ${DOCKER_IMAGE_BACKEND}:${IMAGE_TAG} \
+                                 -t ${DOCKER_IMAGE_BACKEND}:latest ./backend
+                '''
+                echo "✅ Images Docker buildées avec le tag ${IMAGE_TAG}"
+            }
+        }
+
+        stage('Load Images into Minikube') {
+            steps {
+                sh '''
+                    minikube image load ${DOCKER_IMAGE_FRONTEND}:latest
+                    minikube image load ${DOCKER_IMAGE_BACKEND}:latest
+                '''
+                echo "✅ Images chargées dans Minikube"
+            }
+        }
+
+        stage('Terraform Init') {
+            steps {
+                dir("${TF_WORKING_DIR}") {
+                    sh '''
+                        terraform init -input=false
+                        echo "✅ Terraform initialisé"
+                    '''
+                }
+            }
+        }
+
+        stage('Terraform Plan') {
+            steps {
+                dir("${TF_WORKING_DIR}") {
+                    sh '''
+                        terraform plan \
+                          -var="frontend_image=${DOCKER_IMAGE_FRONTEND}:${IMAGE_TAG}" \
+                          -var="backend_image=${DOCKER_IMAGE_BACKEND}:${IMAGE_TAG}" \
+                          -out=tfplan \
+                          -input=false
+                        echo "✅ Terraform plan généré"
+                    '''
+                }
+            }
+        }
+
+        stage('Terraform Apply') {
+            steps {
+                dir("${TF_WORKING_DIR}") {
+                    sh '''
+                        terraform apply -auto-approve -input=false tfplan
+                        echo "✅ Infrastructure provisionnée par Terraform"
+                    '''
+                }
+            }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                sh '''
+                    echo "=== Pods en cours ==="
+                    kubectl get pods -n ${NAMESPACE}
+                    echo "=== Services ==="
+                    kubectl get services -n ${NAMESPACE}
+                    echo "=== Ingress ==="
+                    kubectl get ingress -n ${NAMESPACE}
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "🎉 Pipeline réussi ! Application déployée sur Minikube."
+        }
+        failure {
+            echo "❌ Pipeline échoué. Vérifier les logs Jenkins."
+        }
+        always {
+            cleanWs()
+        }
+    }
+}

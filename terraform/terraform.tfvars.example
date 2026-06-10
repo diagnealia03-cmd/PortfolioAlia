@@ -1,0 +1,20 @@
+# ─────────────────────────────────────────
+# terraform.tfvars.example
+# Copier ce fichier en terraform.tfvars et remplir les valeurs
+# ─────────────────────────────────────────
+
+namespace   = "portfolio"
+app_name    = "portfolioalia"
+environment = "dev"
+
+frontend_image = "portfolioalia-frontend:latest"
+backend_image  = "portfolioalia-backend:latest"
+mongodb_image  = "mongo:6.0"
+
+frontend_replicas = 1
+backend_replicas  = 1
+
+mongodb_storage_size = "1Gi"
+mongodb_database     = "portfolioalia"
+
+ingress_host = "portfolio.local"

@@ -1,0 +1,14 @@
+variable "namespace"            { type = string }
+variable "app_name"             { type = string }
+variable "environment"          { type = string }
+variable "frontend_image"       { type = string }
+variable "backend_image"        { type = string }
+variable "mongodb_image"        { type = string }
+variable "frontend_replicas"    { type = number }
+variable "backend_replicas"     { type = number }
+variable "mongodb_storage_size" { type = string }
+variable "mongodb_database"     { type = string }
+variable "mongodb_port"         { type = number }
+variable "frontend_port"        { type = number }
+variable "backend_port"         { type = number }
+variable "ingress_host"         { type = string }
