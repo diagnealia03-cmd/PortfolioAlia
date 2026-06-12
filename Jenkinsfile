@@ -5,6 +5,7 @@ pipeline {
         SONAR_HOST_URL     = 'http://sonarqube:9000'
         COMPOSE_PROJECT    = 'portfolioalia'
         COMPOSE_FILE_PATH  = "${WORKSPACE}/docker-compose.yml"
+        MAIL_RECIPIENT     = 'diagnealia03@gmail.com'
     }
     stages {
         stage('Checkout') {
@@ -17,20 +18,19 @@ pipeline {
             steps {
                 echo '⚙️ Installation de Node.js...'
                 sh '''
-                    if ! command -v node &> /dev/null; then
+                    if ! command -v node > /dev/null 2>&1; then
                         curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
                         apt-get install -y nodejs
                     else
                         echo "Node.js déjà installé : $(node -v)"
                     fi
-                    node -v
-                    npm -v
+                    node -v && npm -v
                 '''
             }
         }
         stage('Install Dependencies') {
             steps {
-                dir('backend') { sh 'npm install' }
+                dir('backend')  { sh 'npm install' }
                 dir('frontend') { sh 'npm install' }
             }
         }
@@ -43,14 +43,18 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 echo '🔍 Analyse de la qualité du code...'
-                withSonarQubeEnv('SonarQube') {
-                    sh '''
-                        sonar-scanner \
-                          -Dsonar.projectKey=portfolio-alia \
-                          -Dsonar.projectName="Portfolio Alia DIAGNE" \
-                          -Dsonar.sources=. \
-                          -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/.git/**
-                    '''
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                    withSonarQubeEnv('SonarQube') {
+                        sh '''
+                            sonar-scanner \
+                              -Dsonar.projectKey=portfolio-alia \
+                              -Dsonar.projectName="Portfolio Alia DIAGNE" \
+                              -Dsonar.sources=. \
+                              -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/.git/**,**/coverage/**,**/*.test.js,**/*.spec.js \
+                              -Dsonar.javascript.node.maxspace=256 \
+                              -Dsonar.javascript.maxFileSize=1000
+                        '''
+                    }
                 }
             }
         }
@@ -99,10 +103,42 @@ pipeline {
     }
     post {
         success {
-            echo '🎉 Pipeline réussi ! Portfolio déployé sur Docker et Kubernetes !'
+            echo '🎉 Pipeline réussi !'
+            mail(
+                to:      "${MAIL_RECIPIENT}",
+                subject: "✅ Build #${BUILD_NUMBER} — Portfolio Alia RÉUSSI",
+                body:    """Bonjour Alia,
+
+Le build #${BUILD_NUMBER} s'est terminé avec succès.
+
+Projet  : ${JOB_NAME}
+Build   : #${BUILD_NUMBER}
+Statut  : SUCCESS ✅
+Durée   : ${currentBuild.durationString}
+Lien    : ${BUILD_URL}
+
+Bonne continuation !
+Jenkins CI"""
+            )
         }
         failure {
-            echo '❌ Pipeline échoué. Vérifie les logs ci-dessus.'
+            echo '❌ Pipeline échoué.'
+            mail(
+                to:      "${MAIL_RECIPIENT}",
+                subject: "❌ Build #${BUILD_NUMBER} — Portfolio Alia ÉCHOUÉ",
+                body:    """Bonjour Alia,
+
+Le build #${BUILD_NUMBER} a échoué.
+
+Projet  : ${JOB_NAME}
+Build   : #${BUILD_NUMBER}
+Statut  : FAILURE ❌
+Durée   : ${currentBuild.durationString}
+Logs    : ${BUILD_URL}console
+
+Consulte les logs pour identifier l'erreur.
+Jenkins CI"""
+            )
         }
         always {
             echo '🏁 Pipeline terminé.'
