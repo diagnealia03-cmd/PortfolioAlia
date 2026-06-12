@@ -42,18 +42,10 @@ pipeline {
         }
         stage('SonarQube Analysis') {
             steps {
-                echo '🔍 Analyse de la qualité du code...'
+                echo '🔍 Analyse qualité (Terraform + K8s + Docker)...'
                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                     withSonarQubeEnv('SonarQube') {
-                        sh '''
-                            sonar-scanner \
-                              -Dsonar.projectKey=portfolio-alia \
-                              -Dsonar.projectName="Portfolio Alia DIAGNE" \
-                              -Dsonar.sources=. \
-                              -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/.git/**,**/coverage/**,**/*.test.js,**/*.spec.js \
-                              -Dsonar.javascript.node.maxspace=256 \
-                              -Dsonar.javascript.maxFileSize=1000
-                        '''
+                        sh 'sonar-scanner'
                     }
                 }
             }
@@ -136,7 +128,6 @@ Statut  : FAILURE ❌
 Durée   : ${currentBuild.durationString}
 Logs    : ${BUILD_URL}console
 
-Consulte les logs pour identifier l'erreur.
 Jenkins CI"""
             )
         }
